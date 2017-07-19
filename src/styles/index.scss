@@ -1,0 +1,114 @@
+@import 'reset.scss';
+
+:root {
+	-webkit-font-smoothing: none;
+	font-smoothing: none;
+	font: 8px tahoma, sans-serif;
+	letter-spacing: 1px;
+}
+
+* {
+	image-rendering: pixelated;
+}
+
+body {
+	background: #c9e593;
+	background: url(../images/grass.png) repeat;
+}
+
+#ui {
+	background: #e8b0eb;
+	color: #fff;
+	text-shadow: 1px 1px 0 #000;
+	font-weight: 800;
+	box-shadow: 0 2px 0 0 rgba(0,0,0,.1);
+	padding: 2px;
+	box-shadow: inset 1px 1px 0 0 rgba(255,255,255,.5),inset -1px -1px 0 0 rgba(0,0,0,.5);
+	display: flex;
+	margin-bottom: 10em;
+	> * {
+		flex: 1 1 auto;
+		&:not(:last-child) {
+			margin-right: 1px
+		}
+	}
+	button {
+		flex: 0 0 auto;
+		appearance:none;
+		font-weight: 800;
+		-webkit-appearance:none;
+		letter-spacing: 1px;
+		text-shadow: 1px 1px 0 #000;
+		color: #fff;
+		background: transparent;
+		border: none;
+		font-family: tahoma, sans-serif;
+		font-size: 8px;
+		box-shadow: inset 1px 1px 0 0 rgba(255,255,255,.5),inset -1px -1px 0 0 rgba(0,0,0,.5);
+		display: block;
+	}
+	counter {
+		box-shadow: inset -1px -1px 0 0 rgba(255,255,255,.5),inset 1px 1px 0 0 rgba(0,0,0,.5);
+	}
+	button, counter {
+		padding: .5em;
+	}
+}
+
+.object {
+	background-size: contain;
+	width: 4rem;
+	height: 4rem;
+	position: relative;
+	margin: 1em;
+	float: left;
+	image-rendering: pixelated;
+	&.factory {
+		background-image: url(../images/factory.png);
+	}
+	&.store {
+		background-image: url(../images/store.png);
+	}
+	&.bank {
+		background-image: url(../images/bank.png);
+	}
+	&.depleted {
+		filter: grayscale(1);
+	}
+	&:hover span {
+		display: block;
+	}
+	.money {
+		background-image: url(../images/dollar.png);
+		width: 2em;
+		height: 2em;
+		display: block;
+		position: absolute;
+		margin: auto;
+		right: 0;
+		top: 1em;
+		animation: dollar-pop 1s both;
+	}
+	span {
+		display: none;
+		background: red;
+		color: #fff;
+		font-size: 8px;
+		padding: 2px 4px;
+		box-shadow: inset 1px 1px 0 0 rgba(255,255,255,.5),inset -1px -1px 0 0 rgba(0,0,0,.5);
+		position: absolute;
+		top: 26px;
+		left: 26px;
+	}
+}
+
+@keyframes dollar-pop {
+	0% {
+		transform: translateY(0);
+		opacity: 1;
+	}
+	100% {
+		transform: translateY(-5em);
+		opacity: 0;
+	}
+}
