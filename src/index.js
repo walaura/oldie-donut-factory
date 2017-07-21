@@ -132,7 +132,7 @@ $img.on('load',()=>{
     const getPixelsFromTile = (x,y,height=tileDimensions[1]) => {
         return [
             tileDimensions[0]*x + (tileDimensions[0]*(rows-y)/2) + offset[0],
-            tileDimensions[1]*(y/2) + offset[1] + (height/2-tileDimensions[1]/2)
+            tileDimensions[1]*(y/2) + offset[1] - (height*1.5-tileDimensions[1]*1.5)
         ]
     }
     const getTileFromPixels = (x,y) => {
@@ -176,9 +176,11 @@ $img.on('load',()=>{
         );
 
         // store pass
-        ctx.drawImage(
-            $factory[0],...getPixelsFromTile(2,8,32)
-        );
+        store.items.map((item,index) => {
+            ctx.drawImage(
+                $factory[0],...getPixelsFromTile(index,index,32)
+            );
+        });
     };
 
     const drawLoop = () => {
