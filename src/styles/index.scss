@@ -12,8 +12,7 @@
 }
 
 body {
-	background: #c9e593;
-	background: url(../images/grass.png) repeat;
+	background: #444;
 }
 
 #ui {
@@ -59,8 +58,9 @@ body {
 	}
 }
 
-#app {
-	margin-top: 8rem;
+#play {
+	width: 100vw;
+	height: 100vh;
 }
 
 .object {
