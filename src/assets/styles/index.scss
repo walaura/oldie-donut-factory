@@ -10,30 +10,109 @@
 }
 
 :root {
-	font: 10px munro, sans-serif;
+	font: 11px munro, sans-serif;
     font-weight: 400;
+    --bg: #dd9fe0;
+    --padding: .3em;
+    --text-highlight-color: #00e4ff;
 }
 
 * {
 	image-rendering: pixelated;
+    -webkit-font-smoothing: none;
 }
 
 body {
 	background: #444;
 }
 
+@mixin surface($well: false) {
+    @if $well {
+        border: 1px solid rgba(255,255,255,.5);
+		border-top-color: rgba(0,0,0,.5);
+		border-left-color: rgba(0,0,0,.5);
+    } @else {
+        border: 1px solid rgba(255,255,255,.5);
+		border-bottom-color: rgba(0,0,0,.5);
+		border-right-color: rgba(0,0,0,.5);
+    }
+}
+
+#dock {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: visible;
+    pointer-events: none;
+    .window {
+        position: static;
+        bottom: 0;
+        pointer-events: all;
+        width: 10em;
+        float: right;
+        margin-right: 1em;
+        margin-bottom: -1px;
+    }
+}
+
+.window {
+    background: var(--bg);
+    color: #fff;
+    text-shadow: 1px 1px 0 rgba(0,0,0,.5);
+    @include surface();
+    &-title {
+        @include surface(true);
+        background: rgba(0,0,0,.25);
+        padding: 0 var(--padding);
+    }
+    &-contents {
+        padding: var(--padding);
+        dl {
+            overflow: hidden;
+            dt, dd {
+                width: 50%;
+                display: block;
+                float: left;
+                height: auto;
+            }
+            dt {
+                color: var(--text-highlight-color);
+            }
+            dd {
+                text-align: right;
+            }
+        }
+    }
+    &-area:not(:first-child) {
+        border-top: 1px solid rgba(0,0,0,.5);
+        box-shadow: inset 0 1px 0 0 rgba(255,255,255,.5)
+    }
+    &-area {
+        overflow: hidden;
+        padding: var(--padding) 0;
+        &:first-child {
+            padding-top: 0;
+        }
+        &:last-child {
+            padding-bottom: 0;
+        }
+    }
+}
+
+
 #ui {
-	background: #e8b0eb;
+	background: var(--bg);
 	color: #fff;
-	text-shadow: 1px 1px 0 #000;
+	text-shadow: 1px 1px 0 rgba(0,0,0,.5);
 	box-shadow: 0 2px 0 0 rgba(0,0,0,.1);
 	padding: 2px;
-	box-shadow: inset 1px 1px 0 0 rgba(255,255,255,.5),inset -1px -1px 0 0 rgba(0,0,0,.5);
 	display: flex;
 	position: fixed;
 	top: 0;
 	left: 0;
 	right: 0;
+    @include surface();
 	> * {
 		flex: 1 1 auto;
 		&:not(:last-child) {
@@ -50,24 +129,18 @@ body {
 		border: none;
 		font-family: inherit;
 		font-size: inherit;
-		border: 1px solid rgba(255,255,255,.5);
-		border-bottom-color: rgba(0,0,0,.5);
-		border-right-color: rgba(0,0,0,.5);
 		display: block;
+        @include surface();
 		&:active {
 			background: rgba(0,0,0,.1);
-			border: 1px solid rgba(255,255,255,.5);
-			border-top-color: rgba(0,0,0,.5);
-			border-left-color: rgba(0,0,0,.5);
+			@include surface(true);
 		}
 	}
 	counter {
-		border: 1px solid rgba(255,255,255,.5);
-		border-top-color: rgba(0,0,0,.5);
-		border-left-color: rgba(0,0,0,.5);
+		@include surface(true);
 	}
 	button, counter {
-		padding: .5em;
+		padding: var(--padding);
 	}
 }
 

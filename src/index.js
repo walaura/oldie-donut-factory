@@ -13,6 +13,9 @@ const store = {
     items: []
 };
 
+let lastClickAtItem = null;
+let lastClickAtTile = [0,0];
+
 const redraw = () => {
 
     let donutsTotal = store.items.reduce((sum,item)=>{
@@ -25,12 +28,50 @@ const redraw = () => {
     },0);
     document.querySelector('#money').textContent = moneyTotal.toFixed(2) + '$'
 
+    if(lastClickAtItem) {
+        document.querySelector('.window-contents').innerHTML =
+        `
+        <div class="window-area">
+            ${lastClickAtItem.name}
+        </div>
+        <div class="window-area">
+        <dl>
+            ${Object.keys(lastClickAtItem.converts).map(key => (
+                `
+                <dt>Makes:</dt>
+                <dd>${lastClickAtItem.converts[key].to}</dd>
+                <dt>Needs:</dt>
+                <dd>
+                    ${lastClickAtItem.converts[key].from}
+                </dd>
+                ${
+                    lastClickAtItem.state.goodsDepleted.has(lastClickAtItem.converts[key].from) ?
+                        `!!Missing ${lastClickAtItem.converts[key].from}!!`:''
+                }
+                `
+            )).join('')}
+        </dl>
+        </div>
+        <div class="window-area">
+            <dl>
+                ${Object.keys(lastClickAtItem.goods).map(key => (
+                    `
+                    <dt>${key}:</dt>
+                    <dd>${lastClickAtItem.goods[key]}</dd>
+                    `
+                )).join('')}
+            </dl>
+        </div>
+        `;
+    }
+
 }
 
-let lastClickAt = [0,0];
+setInterval(()=>{redraw();},500);
 
 const addThingToStore = thing => {
-    thing.position = lastClickAt;
+    thing.name = `${thing.type.charAt(0).toUpperCase() + thing.type.slice(1)} #${store.items.length}`;
+    thing.position = lastClickAtTile;
     store.items = [...store.items, thing];
     store.items = store.items.sort((a, b) => a.position[0] > b.position[0] ? 1 : -1)
     store.items = store.items.sort((a, b) => a.position[1] > b.position[1] ? 1 : -1)
@@ -45,7 +86,6 @@ const addDonut = () => {
     });
 
     addThingToStore(factory);
-    redraw();
 }
 const addStore = () => {
     addThingToStore(new Store());
@@ -60,7 +100,8 @@ document.querySelector('#addBank').addEventListener('click',()=>addBank());
 document.querySelector('#redraw').addEventListener('click',()=>redraw());
 
 $canvas.addEventListener('unitclick',ev => {
-    lastClickAt = ev.detail.tile;
+    lastClickAtItem = ev.detail.item;
+    lastClickAtTile = ev.detail.tile;
 })
 
 paint($canvas,{

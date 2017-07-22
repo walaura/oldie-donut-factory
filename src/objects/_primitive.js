@@ -36,7 +36,8 @@ export default class primitive {
             return true;
         }
         else {
-            this.linkedObjects.map(object => {
+            for (let key in this.linkedObjects) {
+                let object = this.linkedObjects[key];
                 if (object.goods[type] > neededPlusGreed) {
                     object.goods[type] = object.goods[type] - neededPlusGreed;
                     this.goods[type] += neededPlusGreed;
@@ -50,7 +51,7 @@ export default class primitive {
                 else {
                     return false;
                 }
-            })
+            }
         }
     }
 
