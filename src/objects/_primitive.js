@@ -85,7 +85,7 @@ export default class primitive {
 
             if(converter.completionPercent > 1) {
                 converter.completionPercent = 0;
-                this.onUnitCompleted(converter.to);
+                this.timeLastUnitCompleted = now;
             }
             return converter;
         })

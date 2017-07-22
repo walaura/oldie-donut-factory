@@ -15,39 +15,16 @@ const store = {
 
 const redraw = () => {
 
-    /*
-    store.items.map(item => {
-
-        let $item = $canvas.find('#'+item.uuid);
-
-        if ($item.length < 1) {
-            $item = $(`
-                <div id="${item.uuid}"" class="object ${item.type}"></div>
-            `)
-            $item.on('click',()=>{console.log(item)})
-            $canvas.append($item);
-        }
-        item.onUnitCompleted = unit => {
-            $item.append($(`<div class='money'></div>`));
-        };
-        item.onSourceDepleted = unit => {
-            $item.addClass('depleted');
-        };
-        item.onSourceReplenished = unit => {
-            $item.removeClass('depleted');
-        };
-
-    })
-    */
     let donutsTotal = store.items.reduce((sum,item)=>{
         return sum + item.goods.DONUT
     },0);
-    $('#donuts').text(donutsTotal.toFixed(2) + ' donuts');
+    document.querySelector('#donuts').textContent = donutsTotal.toFixed(2) + ' donuts'
 
     let moneyTotal = store.items.reduce((sum,item)=>{
         return sum + item.goods.MONEY
     },0);
-    $('#money').text(moneyTotal.toFixed(2) + '$');
+    document.querySelector('#money').textContent = moneyTotal.toFixed(2) + '$'
+
 }
 
 let lastClickAt = [0,0];
@@ -55,6 +32,8 @@ let lastClickAt = [0,0];
 const addThingToStore = thing => {
     thing.position = lastClickAt;
     store.items = [...store.items, thing];
+    store.items = store.items.sort((a, b) => a.position[0] > b.position[0] ? 1 : -1)
+    store.items = store.items.sort((a, b) => a.position[1] > b.position[1] ? 1 : -1)
 }
 
 const addDonut = () => {
