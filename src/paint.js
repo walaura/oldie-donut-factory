@@ -20,7 +20,7 @@ const imageList = (()=>{
         'factory','store','bank'
     ].map(image => {
         rt[image] = new Image();
-        rt[image].src = require(`images/${image}.png`)
+        rt[image].src = require(`assets/images/${image}.png`)
     });
     return rt;
 })();

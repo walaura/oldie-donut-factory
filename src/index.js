@@ -5,7 +5,7 @@ import Factory from 'objects/factory';
 import Store from 'objects/store';
 import Bank from 'objects/bank';
 
-import './styles/index.scss'
+import 'assets/styles/index.scss'
 
 const $canvas = document.getElementById('play');
 
