@@ -1,5 +1,5 @@
 import { MONEY, DONUT } from 'resources'
-import { paint } from 'paint'
+import { setupCanvas, drawLoop } from 'paint'
 
 import Factory from 'objects/factory';
 import Store from 'objects/store';
@@ -15,6 +15,7 @@ const store = {
 
 let lastClickAtItem = null;
 let lastClickAtTile = [0,0];
+let draggablePlaceholder = {}
 
 const redraw = () => {
 
@@ -77,33 +78,45 @@ const addThingToStore = thing => {
     store.items = store.items.sort((a, b) => a.position[1] > b.position[1] ? 1 : -1)
 }
 
-const addDonut = () => {
-
-    let factory = new Factory();
-
-    store.items.map(item => {
-        factory.attach(item);
-    });
-
-    addThingToStore(factory);
-}
-const addStore = () => {
-    addThingToStore(new Store());
-}
-const addBank = () => {
-    addThingToStore(new Bank());
+const holdItem = item => {
+    draggablePlaceholder = {
+        item: item
+    }
 }
 
-document.querySelector('#addDonut').addEventListener('click',()=>addDonut());
-document.querySelector('#addStore').addEventListener('click',()=>addStore());
-document.querySelector('#addBank').addEventListener('click',()=>addBank());
-document.querySelector('#redraw').addEventListener('click',()=>redraw());
+const addItem = item => {
+    if(item.type === 'factory') {
+        store.items.map(storeItem => {
+            item.attach(storeItem);
+        });
+    }
+    addThingToStore(item);
+}
+
+document.querySelector('#addDonut').addEventListener('click',()=>holdItem(new Factory()));
+document.querySelector('#addStore').addEventListener('click',()=>holdItem(new Store()));
+document.querySelector('#addBank').addEventListener('click',()=>holdItem(new Bank()));
 
 $canvas.addEventListener('unitclick',ev => {
     lastClickAtItem = ev.detail.item;
     lastClickAtTile = ev.detail.tile;
+
+    if(draggablePlaceholder && draggablePlaceholder.item) {
+        addItem(draggablePlaceholder.item);
+        draggablePlaceholder = {};
+    }
+
 })
 
-paint($canvas,{
-    store: store
-});
+const drawLoopLoop = () => {
+    requestAnimationFrame(()=>{
+        drawLoop($canvas,{
+            store: store,
+            draggablePlaceholder: draggablePlaceholder,
+        });
+        drawLoopLoop();
+    })
+}
+
+setupCanvas($canvas,store);
+drawLoopLoop();

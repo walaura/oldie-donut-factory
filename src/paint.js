@@ -6,6 +6,7 @@ const tileDimensions = [32,16];
 let $scratchpad;
 
 let offset = [0,0]
+let ctx;
 
 let mousedown = false;
 let mousedrag = false;
@@ -58,11 +59,34 @@ const getScratchpadAndContext = () => {
 	return [$scratchpad,$scratchpad.getContext('2d')];
 }
 
-const filter = (img,filter=false) => {
+const filter = (img,filters) => {
 
-	if(filter === false) {
+	if(!filters) {
 		return img;
 	}
+
+    if(!Array.isArray(filters)) {
+        filters = [filters];
+    }
+
+    const filtersToApply = {};
+
+    filtersToApply.grayscale = rgba => {
+        for (var i = 0; i < rgba.length; i += 4) {
+    	  	var avg = (rgba[i] + rgba[i + 1] + rgba[i + 2]) / 3;
+    	  	rgba[i]     = avg; // red
+    	  	rgba[i + 1] = avg; // green
+    	  	rgba[i + 2] = avg; // blue
+        }
+        return rgba;
+    }
+
+    filtersToApply.opacity = rgba => {
+        for (var i = 0; i < rgba.length; i += 4) {
+            rgba[i+3] = rgba[i+3]/2
+        }
+        return rgba;
+    }
 
 	let w, h, $canvas, ctx;
 
@@ -77,12 +101,10 @@ const filter = (img,filter=false) => {
     let imgdata = ctx.getImageData(0,0,w,h) ;
     let rgba = imgdata.data;
 
-	for (var i = 0; i < rgba.length; i += 4) {
-	  	var avg = (rgba[i] + rgba[i + 1] + rgba[i + 2]) / 3;
-	  	rgba[i]     = avg; // red
-	  	rgba[i + 1] = avg; // green
-	  	rgba[i + 2] = avg; // blue
-    }
+    for (let key in filters) {
+        console.log(filters[key]);
+        rgba = filtersToApply[filters[key]](rgba);
+    };
 
 	ctx.putImageData(imgdata,0,0);
 	let returnable = new Image();
@@ -91,9 +113,9 @@ const filter = (img,filter=false) => {
 
 }
 
-export const paint = ($canvas,{store={}}={}) => {
+export const setupCanvas = ($canvas,store) => {
 
-	const ctx = $canvas.getContext('2d');
+	ctx = $canvas.getContext('2d');
 
 	ctx.canvas.width  = window.innerWidth;
 	ctx.canvas.height = window.innerHeight;
@@ -101,7 +123,7 @@ export const paint = ($canvas,{store={}}={}) => {
 	ctx.scale(scale, scale);
 	ctx.imageSmoothingEnabled = false;
 
-	$canvas.addEventListener('mousedown',ev=>{
+    $canvas.addEventListener('mousedown',ev=>{
 	    mousedown = true;
 	    mousedragOrigin = cursorAt;
 
@@ -127,42 +149,44 @@ export const paint = ($canvas,{store={}}={}) => {
 	    }
 	});
 
-	const draw = () => {
+}
 
-	    ctx.clearRect(0, 0, $canvas.width, $canvas.height);
+export const drawLoop = ($canvas,{
+    store={},
+    draggablePlaceholder={}
+,}={}) => {
 
-	    // floor pass
-	    for(let yIndex=0;yIndex < rows;yIndex++) {
-	        for(let xIndex=0;xIndex < cols;xIndex++) {
-	            let tilePosAt = getPixelsFromTile(xIndex,yIndex);
-	            ctx.drawImage(
-	                imageList.floor,tilePosAt[0],tilePosAt[1]
-	            );
-	        }
-	    }
+    ctx.clearRect(0, 0, $canvas.width, $canvas.height);
 
-	    // cursor pass
-	    let cursorPosAt = getPixelsFromTile(...getTileFromPixels(...cursorAt));
-	    ctx.drawImage(
-	        imageList.cursor,cursorPosAt[0],cursorPosAt[1]
-	    );
+    // floor pass
+    for(let yIndex=0;yIndex < rows;yIndex++) {
+        for(let xIndex=0;xIndex < cols;xIndex++) {
+            let tilePosAt = getPixelsFromTile(xIndex,yIndex);
+            ctx.drawImage(
+                imageList.floor,tilePosAt[0],tilePosAt[1]
+            );
+        }
+    }
 
-	    // store pass
-	    store.items.map((item,index) => {
-			ctx.drawImage(
-				filter(imageList[item.type],item.state.goodsDepleted.size > 0),
-				...getPixelsFromTile(item.position[0],item.position[1],imageList[item.type].naturalHeight)
-			)
-	    });
-	};
+    // cursor pass
+    let cursorPosAt = getTileFromPixels(...cursorAt);
 
-	const drawLoop = () => {
-	    requestAnimationFrame(()=>{
-	        draw();
-	        drawLoop();
-	    })
-	}
+    ctx.drawImage(
+        imageList.cursor,...getPixelsFromTile(...cursorPosAt)
+    );
+    if(draggablePlaceholder && draggablePlaceholder.item) {
+        ctx.drawImage(
+			filter(imageList[draggablePlaceholder.item.type],'opacity'),
+			...getPixelsFromTile(...cursorPosAt,imageList[draggablePlaceholder.item.type].naturalHeight)
+		)
+    }
 
-	drawLoop();
+    // store pass
+    store.items.map((item,index) => {
+		ctx.drawImage(
+			filter(imageList[item.type],item.state.goodsDepleted.size > 0?'grayscale':null),
+			...getPixelsFromTile(item.position[0],item.position[1],imageList[item.type].naturalHeight)
+		)
+    });
 
 }
