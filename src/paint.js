@@ -1,7 +1,9 @@
 const cols = 20;
 const rows = cols*1.5;
 
-const tileDimensions = [32,16]
+const tileDimensions = [32,16];
+
+let $scratchpad;
 
 let offset = [0,0]
 
@@ -10,16 +12,6 @@ let mousedrag = false;
 let mousedragOrigin = [0,0];
 let cursorAt = [0,0];
 let scale = 2;
-
-var grayscale = function() {
-  for (var i = 0; i < data.length; i += 4) {
-	var avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-	data[i]     = avg; // red
-	data[i + 1] = avg; // green
-	data[i + 2] = avg; // blue
-  }
-  ctx.putImageData(imageData, 0, 0);
-};
 
 const imageList = (()=>{
     let rt = {};
@@ -59,9 +51,49 @@ const getTileFromPixels = (x,y) => {
 	return [x,y];
 }
 
-export const paint = (canvas,{store={}}={}) => {
+const getScratchpadAndContext = () => {
+	if(!$scratchpad) {
+		$scratchpad = document.createElement('canvas');
+	}
+	return [$scratchpad,$scratchpad.getContext('2d')];
+}
 
-	const ctx = canvas.getContext('2d');
+const filter = (img,filter=false) => {
+
+	if(filter === false) {
+		return img;
+	}
+
+	let w, h, $canvas, ctx;
+
+	[w, h] = [img.naturalWidth,img.naturalHeight];
+    [$canvas, ctx] = getScratchpadAndContext();
+
+	$canvas.width = w;
+	$canvas.height = h;
+
+    ctx.drawImage(img,0,0);
+
+    let imgdata = ctx.getImageData(0,0,w,h) ;
+    let rgba = imgdata.data;
+
+	for (var i = 0; i < rgba.length; i += 4) {
+	  	var avg = (rgba[i] + rgba[i + 1] + rgba[i + 2]) / 3;
+	  	rgba[i]     = avg; // red
+	  	rgba[i + 1] = avg; // green
+	  	rgba[i + 2] = avg; // blue
+    }
+
+	ctx.putImageData(imgdata,0,0);
+	let returnable = new Image();
+	returnable.src = $canvas.toDataURL('image/png');
+	return returnable;
+
+}
+
+export const paint = ($canvas,{store={}}={}) => {
+
+	const ctx = $canvas.getContext('2d');
 
 	ctx.canvas.width  = window.innerWidth;
 	ctx.canvas.height = window.innerHeight;
@@ -69,14 +101,22 @@ export const paint = (canvas,{store={}}={}) => {
 	ctx.scale(scale, scale);
 	ctx.imageSmoothingEnabled = false;
 
-	canvas.addEventListener('mousedown',ev=>{
+	$canvas.addEventListener('mousedown',ev=>{
 	    mousedown = true;
 	    mousedragOrigin = cursorAt;
+
+		let tile = getTileFromPixels(...cursorAt);
+		$canvas.dispatchEvent(new CustomEvent('unitclick',{
+			detail: {
+				tile: tile,
+				item: store.items.filter(item => (item.position[0] === tile[0] && item.position[1] === tile[1]))[0],
+			}
+		}));
 	});
-	canvas.addEventListener('mouseup',ev=>{
+	$canvas.addEventListener('mouseup',ev=>{
 	    mousedown = false;
 	});
-	canvas.addEventListener('mousemove',ev=>{
+	$canvas.addEventListener('mousemove',ev=>{
 	    cursorAt = [ev.x/scale,ev.y/scale];
 	    if(mousedown) {
 	        offset = [
@@ -89,7 +129,7 @@ export const paint = (canvas,{store={}}={}) => {
 
 	const draw = () => {
 
-	    ctx.clearRect(0, 0, canvas.width, canvas.height);
+	    ctx.clearRect(0, 0, $canvas.width, $canvas.height);
 
 	    // floor pass
 	    for(let yIndex=0;yIndex < rows;yIndex++) {
@@ -109,9 +149,10 @@ export const paint = (canvas,{store={}}={}) => {
 
 	    // store pass
 	    store.items.map((item,index) => {
-	        ctx.drawImage(
-	            imageList[item.type],...getPixelsFromTile(index,index,32)
-	        );
+			ctx.drawImage(
+				filter(imageList[item.type],item.state.goodsDepleted.size > 0),
+				...getPixelsFromTile(item.position[0],item.position[1],imageList[item.type].naturalHeight)
+			)
 	    });
 	};
 

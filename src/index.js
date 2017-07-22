@@ -1,14 +1,13 @@
 import { MONEY, DONUT } from 'resources'
 import { paint } from 'paint'
 
-import $ from 'jquery';
 import Factory from 'objects/factory';
 import Store from 'objects/store';
 import Bank from 'objects/bank';
 
 import './styles/index.scss'
 
-const $canvas = $('#app');
+const $canvas = document.getElementById('play');
 
 const store = {
     items: []
@@ -16,7 +15,7 @@ const store = {
 
 const redraw = () => {
 
-    return;
+    /*
     store.items.map(item => {
 
         let $item = $canvas.find('#'+item.uuid);
@@ -39,7 +38,7 @@ const redraw = () => {
         };
 
     })
-
+    */
     let donutsTotal = store.items.reduce((sum,item)=>{
         return sum + item.goods.DONUT
     },0);
@@ -51,6 +50,13 @@ const redraw = () => {
     $('#money').text(moneyTotal.toFixed(2) + '$');
 }
 
+let lastClickAt = [0,0];
+
+const addThingToStore = thing => {
+    thing.position = lastClickAt;
+    store.items = [...store.items, thing];
+}
+
 const addDonut = () => {
 
     let factory = new Factory();
@@ -59,16 +65,14 @@ const addDonut = () => {
         factory.attach(item);
     });
 
-    store.items = [...store.items, factory];
+    addThingToStore(factory);
     redraw();
 }
 const addStore = () => {
-    store.items = [...store.items, new Store()];
-    redraw();
+    addThingToStore(new Store());
 }
 const addBank = () => {
-    store.items = [...store.items, new Bank()];
-    redraw();
+    addThingToStore(new Bank());
 }
 
 document.querySelector('#addDonut').addEventListener('click',()=>addDonut());
@@ -76,7 +80,10 @@ document.querySelector('#addStore').addEventListener('click',()=>addStore());
 document.querySelector('#addBank').addEventListener('click',()=>addBank());
 document.querySelector('#redraw').addEventListener('click',()=>redraw());
 
-const canvas = document.getElementById('play');
-paint(canvas,{
+$canvas.addEventListener('unitclick',ev => {
+    lastClickAt = ev.detail.tile;
+})
+
+paint($canvas,{
     store: store
 });

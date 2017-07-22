@@ -47,11 +47,21 @@ body {
 		border: none;
 		font-family: inherit;
 		font-size: inherit;
-		box-shadow: inset 1px 1px 0 0 rgba(255,255,255,.5),inset -1px -1px 0 0 rgba(0,0,0,.5);
+		border: 1px solid rgba(255,255,255,.5);
+		border-bottom-color: rgba(0,0,0,.5);
+		border-right-color: rgba(0,0,0,.5);
 		display: block;
+		&:active {
+			background: rgba(0,0,0,.1);
+			border: 1px solid rgba(255,255,255,.5);
+			border-top-color: rgba(0,0,0,.5);
+			border-left-color: rgba(0,0,0,.5);
+		}
 	}
 	counter {
-		box-shadow: inset -1px -1px 0 0 rgba(255,255,255,.5),inset 1px 1px 0 0 rgba(0,0,0,.5);
+		border: 1px solid rgba(255,255,255,.5);
+		border-top-color: rgba(0,0,0,.5);
+		border-left-color: rgba(0,0,0,.5);
 	}
 	button, counter {
 		padding: .5em;

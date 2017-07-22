@@ -14,7 +14,11 @@ export default class primitive {
 		];
         this.uuid = uuid();
         this.lastTick = Date.now();
-        this.onUnitCompleted = () => {};
+        this.state = {
+            timeLastUnitCompleted: 0,
+            goodsDepleted: new Set()
+        }
+        this.position = [0,0];
         setInterval(()=>{
             this.tick();
         },1000);
@@ -64,11 +68,11 @@ export default class primitive {
             let resourceNeeded = (converter.rate*convertablePercent);
 
             if(!this.fetchResource(converter.from,resourceNeeded)) {
-                this.onSourceDepleted(converter.from);
+                this.state.goodsDepleted.add(converter.from);
                 return converter;
             }
             else {
-                this.onSourceReplenished(converter.from);
+                this.state.goodsDepleted.delete(converter.from);
             }
 
             converter.completionPercent += convertablePercent,
